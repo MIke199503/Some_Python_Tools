@@ -1,14 +1,15 @@
 '''
-Author: your name
+Author:MikePy
 Date: 2021-01-25 18:50:44
-LastEditTime: 2021-01-25 22:07:15
-LastEditors: Please set LastEditors
-Description: In User Settings Edit
+LastEditTime: 2021-01-26 22:52:41
 FilePath: /undefined/Users/zhutaohe/Downloads/Tools.py
 '''
 import tkinter
 import tkinter.messagebox
 import random
+import openpyxl
+import os 
+import time
 
 class Window:
         def __init__(self):
@@ -91,9 +92,16 @@ class Window:
                 if self.add.get() == 0 and self.sub.get() == 0 and self.plus.get() == 0  and self.divi.get() == 0 :
                         tkinter.messagebox.showerror("不正确的选择","请至少选择一项运算！")
                 else:
-                        res = self.result()
-                        for i in range(len(res[0])):
-                                print(str(res[0][i]) + res[1][i] + str(res[2][i]) + "="  )
+                        res = self.result() #获取最终数据
+
+                        wb = ExcelWork(data=res)  #建立文件，
+                        successful = wb.save_data() #是否保存成功
+                        if successful :
+                                tkinter.messagebox.showerror("成功！！！！","文件已成功输出，文件地址：{0}".format(os.getcwd()))
+                        else:
+                                tkinter.messagebox.showerror("保存出错！！","保存出错，请再次尝试，若还未成功，请联系老朱：13631298646")
+                                
+
         
         #测试
         def data_check(self):
@@ -103,6 +111,9 @@ class Window:
         def count_check(self,content):
                 if content.isdigit():
                         print(self.data_count.get())
+                        if int(content) >= 1000 :
+                                tkinter.messagebox.showerror("Are you crazy ???","孩子需要更加美好的童年！！！！")
+                                return False
                         return True
                 else:
                         return False
@@ -110,6 +121,7 @@ class Window:
         def check_error(self):
                 tkinter.messagebox.showerror('错误','请输入正确的项目数！！')
                 self.count.delete(0,'end')
+                self.count.insert(0,'10')
 
         #产出数据
         def result(self):
@@ -162,7 +174,36 @@ class Window:
 
 
 class ExcelWork():
-        pass    
+        def __init__(self,data) -> None:
+            self.wb = openpyxl.Workbook()
+            self.worksheet = self.wb.active
+            self.worksheet.title = time.strftime("%Y-%m-%d",time.gmtime())
+            self.filename = time.strftime("%Y-%m-%d",time.gmtime()) + "练习题文件.xlsx"
+            self.write_basic_data()
+            self.data = data
+
+        def write_basic_data(self):
+                #写入标题行
+                self.worksheet['A1'] = "序号"
+                self.worksheet['B1'] = "数A"
+                self.worksheet['C1'] = "运算符"
+                self.worksheet['D1'] = "数B"
+                self.worksheet['E1'] = "结果"
+        
+        def save_data(self):
+                #写入数据
+                for item in range(0,len(self.data[0])):
+                        self.worksheet.cell(row = item + 2 ,column = 1,value = item + 1 )
+                        self.worksheet.cell(row = item + 2 ,column = 2,value = self.data[0][item])
+                        self.worksheet.cell(row = item + 2 ,column = 3,value = self.data[1][item])
+                        self.worksheet.cell(row = item + 2 ,column = 4,value = self.data[2][item])
+                # 尝试保存
+                try :
+                        self.wb.save(filename = self.filename)
+                        return True
+                except:
+                        return False
+                
 
 
 if __name__ == "__main__":
